@@ -11,21 +11,15 @@ Products
    <h1>Все товары</h1>
    <h3>Здравствуй {{user.username}}</h3>
    <form action="" method="get" >
-    {{ filterset.form.non_field_errors }}
-
-    {{ filterset.form.name__icontains.errors }}
-    <label for="{{ filterset.form.name__icontains.id_for_label }}">Поиск товаров</label>
-    <input
-        id="{{ filterset.form.name__icontains.id }}"
-        name="{{ filterset.form.name__icontains.name }}"
-        value="{{ filterset.form.name__icontains.value }}"
-        class="form-control"
-    >
-    <input type="submit" class="mt-3 btn-primary" value="Найти" />
+       {{ filterset.form.non_field_errors }}
+       {{ filterset.form.as_p }}
+       <input type="submit" value="Найти" />
     </form>
 
    <hr>
+   {% if perms.simpleapp.add_product %}
    <a href="http://127.0.0.1:8000/products/create">Добавить товар</a>
+   {% endif %}
    {% if products %}
        <table>
            <tr>
@@ -34,7 +28,9 @@ Products
                <td>Категория</td>
                <td>Цена</td>
                <td>Количество</td>
+               {% if perms.simpleapp.change_product or perms.simpleapp.delete_product %}
                <td>Действия</td>
+               {% endif %}
            </tr>
 
            {% for product in products %}
@@ -45,8 +41,12 @@ Products
                <td>{{ product.price|currency }}</td>
                <td>{{ product.quantity }}</td>
                <td>
+                   {% if perms.simpleapp.change_product %}
                    <a href="http://127.0.0.1:8000/products/{{ product.id }}/update">Изменить</a>
+                   {% endif %}
+                   {% if perms.simpleapp.delete_product %}
                    <a href="http://127.0.0.1:8000/products/{{ product.id }}/delete">Удалить</a>
+                   {% endif %}
                </td>
            </tr>
            {% endfor %}
