@@ -8,7 +8,13 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'description', 'category', 'price', 'quantity']
+        fields = [
+            'name',
+            'description',
+            'category',
+            'price',
+            'quantity'
+        ]
 
     def clean(self):
         cleaned_data = super().clean()
