@@ -1,16 +1,23 @@
+from datetime import datetime
+
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import Exists, OuterRef
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.views import View
+from django.views.decorators.csrf import csrf_protect
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
-from datetime import datetime
-from django.contrib.auth.decorators import login_required
-from django.db.models import Exists, OuterRef
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_protect
+from django.core.cache import cache
+from django.utils.translation import gettext as _
+
 from .filters import ProductFilter
 from .forms import ProductForm
 from .models import Product, Subscription, Category
+from .tasks import hello, printer
 
 
 class ProductsList(ListView):
@@ -48,12 +55,16 @@ class ProductsList(ListView):
 
 
 class ProductDetail(DetailView):
-    # Модель всё та же, но мы хотим получать информацию по отдельному товару
-    model = Product
-    # Используем другой шаблон — product.html
     template_name = 'product.html'
-    # Название объекта, в котором будет выбранный пользователем продукт
-    context_object_name = 'product'
+    queryset = Product.objects.all()
+
+    def get_object(self, *args, **kwargs):
+        obj = cache.get(f"product-{self.kwargs["pk"]}", None)
+
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f"product-{self.kwargs["pk"]}", obj)
+        return obj
 
 
 # Добавляем новое представление для создания товаров.
@@ -112,3 +123,16 @@ def subscriptions(request):
         'subscriptions.html',
         {'categories': categories_with_subscriptions},
     )
+
+
+# class IndexView(View):
+#     def get(self, request):
+#         printer.delay(10)
+#         hello.delay()
+#         return HttpResponse('Hello!')
+
+
+class Index(View):
+    def get(self, request):
+        string = _('Hello World!')
+        return HttpResponse(string)

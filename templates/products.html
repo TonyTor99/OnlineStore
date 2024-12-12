@@ -41,6 +41,7 @@ Products
                <td>{{ product.price|currency }}</td>
                <td>{{ product.quantity }}</td>
                <td>
+                   <a href="http://127.0.0.1:8000/products/{{ product.id }}">Просмотреть</a>
                    {% if perms.simpleapp.change_product %}
                    <a href="http://127.0.0.1:8000/products/{{ product.id }}/update">Изменить</a>
                    {% endif %}
